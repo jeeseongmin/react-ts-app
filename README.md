@@ -1,46 +1,156 @@
-# Getting Started with Create React App
+# React with Typescript
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+1. 프로젝트 생성
 
-## Available Scripts
+```
+$ npx create-react-app react-ts-app --template=typescript
+$ cd react-ts-app
+$ yarn start
+```
 
-In the project directory, you can run:
+2. 패키지 설치
 
-### `npm start`
+   - @craco/craco
+     - react에서 import 시 상대경로 불편함을 해소할 패키지
+   - @loadable/component
+   - @reduxjs/toolkit
+   - @types/js-cookie
+   - @types/lodash
+   - @types/qs
+   - @types/uuid
+   - @types/autosize
+   - axios
+     - 브라우저, Node.js를 위한 Promise API를 활용하는 HTTP 비동기 통신 라이브러리
+   - autosize
+   - classnames
+     - 리액트에서 사용하는 JSX 문법의 classnames
+   - cross-env
+   - dayjs
+     - date를 다룰 수 있는 패키지
+     - [dayjs](https://day.js.org/)
+   - draft-js
+     - 텍스트 에디터의 한 종류
+     - [draftjs](https://draftjs.org/)
+   - highlight-within-textarea
+     - 특정 글자를 highlight 해주는 패키지
+   - http-proxy-middleware - 현재 진행하는 프로젝트를 내가 만든 서버와 proxy로 연결하기 위해서 사용하는 방법
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+     ```
+     const { createProxyMiddleware } = require('http-proxy-middleware');
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+     module.exports = function(app){
+        app.use(
+            createProxyMiddleware('/api', {
+            target: 'http://localhost:3001/',
+            changeOrigin: true
+            })
+        )
+     };
+     ```
 
-### `npm test`
+     - /api는 proxy를 사용할 경로 (path)이고, target은 내가 proxy로 이용할 서버의 주소이다.
+     - changeOrigin은 대상 서버의 구성에 따라 호스트 헤더의 변경을 해주는 옵션이다.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- i18next, react-i18next
 
-### `npm run build`
+  - 다국어 처리
+  - [i18next 자료](https://lemontia.tistory.com/924)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+     yarn add i18next
+     yarn add react-i18next
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```
 
-### `npm run eject`
+- i18next-browser-languagedetector
+- immer
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+  - react에서 불변성을 유지하는 코드를 작성하기 쉽게 해주는 라이브러리이다.
+  - 원래 react에서는 redux로 불변성을 유지하며 state를 다룰 수 있다.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+  ```
+    # 배열에 추가
+    setUsers(state.array.concat(user));
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+    # 배열에서 삭제
+    const onRemove = id => {
+      // user.id가 id인 것을 제거
+      setUsers(users.filter(user => user.id !== id));
+    };
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+    # 배열에서 수정
+    const onToggle = id => {
+      setUsers(
+        users.map(user =>
+          user.id === id ? { ...user, active: !user.active } : user
+        )
+      );
+    };
 
-## Learn More
+    # 객체에서 추가
+    setState(state => { ...state, key: value });
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+    # 객체에서 제거
+    setState(state => { ..._.omit(state, 'deleteKey') })
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+    # 객체에서 수정
+    setState(state => { ...state, key: newValue });
+  ```
+
+  - 그렇지만, immer.js를 사용하면 일반 객체 또는 배열을 다루듯이 사용해도 불변성을 유지할 수 있다.
+
+  ```
+    import produce "immer";
+
+    const baseState = [
+      {
+        todo : "Learn typescript",
+        done : true
+      },
+      {
+        todo : "Try immer",
+        done : false
+      }
+    ];
+
+    const nextState = produce(baseState, draftState => {
+      draftState.push({ todo : "Tweet about it" });
+      draftState[1].done = true;
+    })
+  ```
+
+  - immer에서 쓸 함수는 `produce` 뿐이다. 2가지 params를 가져오는데, 첫번째 param은 수정하고 싶은 객체/배열, 두번째 param은 parameter에 할당된 객체/배열을 바꾸는 함수이다.
+
+- js-cookie
+
+  ```
+  # default 사이트 전체에서 확인 가능
+    Cookies.set('name', 'value');
+  # 7일 뒤 쿠키 만료
+    Cookies.set('name', 'value', { expires : 7 });
+  # 7일 뒤 쿠키 만료 + 현재 경로에서만 확인 가능
+    Cookies.set('name', 'value', { expires : 7, path : '' });
+
+  # get
+    Cookies.get('name'); -> 'value'
+    Cookies.get('phone'); -> undefined
+    Cookies.get(); -> { name : 'value' }
+
+  # delete
+    Cookies.remove('name');
+
+  ```
+
+- moment
+- moment-timezone
+- react-datepicker
+- react-device-detect
+- react-grid-layout
+- react-redux
+- react-responsive
+- react-router-dom
+
+```
+
+```
